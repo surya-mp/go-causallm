@@ -5,7 +5,7 @@ Decoder-only causal-LM architecture and module-registry contracts.
 ## Install
 
 ```sh
-go get github.com/surya-mp/go-causallm@v0.1.0
+go get github.com/surya-mp/go-causallm
 ```
 
 See the [API reference](docs/api.md).
