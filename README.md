@@ -8,6 +8,8 @@ Decoder-only causal-LM architecture and module-registry contracts.
 go get github.com/surya-mp/go-causallm@v0.1.0
 ```
 
+See the [API reference](docs/api.md).
+
 Architecture plugins map a Hugging Face checkpoint to GoMLX graphs and expose
 stable linear names to go-peft. The core is model-family neutral. The initial
 Qwen plugin validates configuration, exposes canonical adapter names, and
