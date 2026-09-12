@@ -1,0 +1,22 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - run: test -z "$(gofmt -l $(find . -name '*.go' -not -path './.git/*'))"
+      - run: go vet ./...
+      - run: go vet -tags gomlx ./...
+      - run: go test -race $(go list ./... | grep -v '/architectures/qwen/gomlx$')
+      - run: go test -tags gomlx ./...

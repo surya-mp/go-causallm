@@ -2,6 +2,12 @@
 
 Decoder-only causal-LM architecture and module-registry contracts.
 
+## Install
+
+```sh
+go get github.com/surya-mp/go-causallm@v0.1.0
+```
+
 Architecture plugins map a Hugging Face checkpoint to GoMLX graphs and expose
 stable linear names to go-peft. The core is model-family neutral. The initial
 Qwen plugin validates configuration, exposes canonical adapter names, and
@@ -25,3 +31,11 @@ block-causal attention mask directly in the Qwen graph.
 
 Native GoMLX NF4 QLoRA requires even projection output widths because its
 packed `Uint4` runtime has no safe odd-width slice operation.
+
+## Scope
+
+Dense Qwen2/Qwen3 is the runnable GoMLX architecture in this release.
+Qwen3-MoE validates configuration and checkpoint inventories, but sparse MoE
+forward/training dispatch is not implemented. Loading, tokenization, SFT
+batching, optimization, generation, and serving stay in their dedicated
+libraries or application.
