@@ -18,7 +18,7 @@ type GenerateOptions struct {
 	StopIDs      []int
 }
 
-// GreedyGenerate appends argmax-selected tokens until max-new-tokens or a stop
+// GreedyGenerate appends caller-selected tokens until max-new-tokens or a stop
 // token is reached. It is backend-neutral; model packages provide NextTokenFunc.
 func GreedyGenerate(ctx context.Context, prompt []int, next NextTokenFunc, options GenerateOptions) ([]int, error) {
 	if len(prompt) == 0 || next == nil || options.MaxNewTokens <= 0 {
