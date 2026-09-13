@@ -14,8 +14,10 @@ import (
 	"github.com/surya-mp/go-peft/format/safetensors"
 )
 
+const tinyQwenConfigJSON = `{"model_type":"qwen3","vocab_size":2,"hidden_size":2,"intermediate_size":4,"num_hidden_layers":1,"num_attention_heads":1,"num_key_value_heads":1}`
+
 func TestDenseQwenBuildsForwardGraph(t *testing.T) {
-	config, err := qwen.ParseConfig([]byte(`{"model_type":"qwen3","vocab_size":2,"hidden_size":2,"intermediate_size":4,"num_hidden_layers":1,"num_attention_heads":1,"num_key_value_heads":1}`))
+	config, err := qwen.ParseConfig([]byte(tinyQwenConfigJSON))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +47,7 @@ func TestDenseQwenBuildsForwardGraph(t *testing.T) {
 }
 
 func TestDenseQwenBuildsPackedForwardGraph(t *testing.T) {
-	config, err := qwen.ParseConfig([]byte(`{"model_type":"qwen3","vocab_size":2,"hidden_size":2,"intermediate_size":4,"num_hidden_layers":1,"num_attention_heads":1,"num_key_value_heads":1}`))
+	config, err := qwen.ParseConfig([]byte(tinyQwenConfigJSON))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +79,7 @@ func writeCheckpoint(t *testing.T, config causallm.Config) string {
 		t.Fatal(err)
 	}
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, "config.json"), []byte(`{"model_type":"qwen3"}`), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "config.json"), []byte(tinyQwenConfigJSON), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	tensors := make(map[string]safetensors.Tensor, len(specs))
