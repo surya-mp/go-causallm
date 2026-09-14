@@ -29,6 +29,10 @@ LoRA adapter with `Session.LoadLoRAAdapter`. Qwen3-MoE has an exact
 configuration and SafeTensors inventory plugin in
 `architectures/qwenmoe`; its sparse dispatch graph remains separate.
 
+Set `qwen.LoadOptions.Progress` or `gomlx.SessionOptions.Progress` to display
+checkpoint-load progress. Messages are human-readable diagnostics, not a
+machine-stable event protocol.
+
 With `-tags gomlx`, the dense bridge is also a native go-peft LoRA host for
 Qwen's q/k/v/o and gate/up/down projections, plus an untied `lm_head`. QLoRA
 quantizes every frozen projection to NF4 (optionally double-quantized), while

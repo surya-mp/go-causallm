@@ -9,8 +9,9 @@ Canonical API documentation is generated from Go doc comments on
 | `causallm.GreedyGenerate` | Run backend-neutral token-by-token decoding. |
 | `architectures/qwen.ParseConfig` | Validate dense Qwen2/Qwen3 configuration. |
 | `architectures/qwen.LoadSafeTensors` | Stream a Qwen checkpoint into a tensor sink. |
+| `architectures/qwen.LoadSafeTensorsWithOptions` | Stream a checkpoint with progress diagnostics. |
 | `architectures/qwen/gomlx.New` | Build the dense Qwen GoMLX graph. |
-| `gomlx.LoadSession` | Load a dense Qwen checkpoint and its GoMLX variable store. |
+| `gomlx.LoadSession` | Load a dense Qwen checkpoint, store, and optional progress callback. |
 | `Session.LoadLoRAAdapter` | Inject and load a Hugging Face PEFT LoRA adapter. |
 | `Model.Logits` / `LogitsSegmented` | Build normal or packed causal forward logits. |
 | `Model.KVCache` / `Model.Generator` | Build GoMLX cached generation. |
