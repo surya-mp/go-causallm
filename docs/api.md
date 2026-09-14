@@ -21,3 +21,8 @@ Canonical API documentation is generated from Go doc comments on
 
 Only dense Qwen2/Qwen3 has a runnable forward/training graph. Qwen3-MoE
 sparse dispatch is intentionally not exposed as a runnable API yet.
+
+Load progress callbacks are display diagnostics, not a machine-stable event
+protocol. `qwen.LoadOptions.ProgressEvery` and `gomlx.SessionOptions.ProgressEvery`
+control tensor reports; zero uses an interval of 25 and always includes first
+and last tensors.

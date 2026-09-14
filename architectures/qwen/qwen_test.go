@@ -138,6 +138,30 @@ func TestLoadSafeTensorsReportsProgress(t *testing.T) {
 	}
 }
 
+func TestLoadSafeTensorsThrottlesDefaultProgress(t *testing.T) {
+	config := tinyConfig(t)
+	specs, err := TensorSpecs(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := writeCheckpoint(t, specs, nil)
+	var messages []string
+	if err := LoadSafeTensorsWithOptions(dir, config, make(tensorSink), LoadOptions{
+		Progress: func(message string) { messages = append(messages, message) },
+	}); err != nil {
+		t.Fatal(err)
+	}
+	var loading []string
+	for _, message := range messages {
+		if strings.HasPrefix(message, "qwen: loading tensor ") {
+			loading = append(loading, message)
+		}
+	}
+	if len(loading) != 2 {
+		t.Fatalf("loading progress = %v, want first and last only", loading)
+	}
+}
+
 func TestLoadSafeTensorsRejectsMissingAndWrongShape(t *testing.T) {
 	config := tinyConfig(t)
 	specs, err := TensorSpecs(config)

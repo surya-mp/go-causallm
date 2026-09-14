@@ -37,7 +37,7 @@ func TestDenseQwenBuildsForwardGraph(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer exec.Finalize()
-	logits, err := exec.Exec1([][]int32{{0, 1}})
+	logits, err := exec.Call1([][]int32{{0, 1}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestDenseQwenBuildsPackedForwardGraph(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer exec.Finalize()
-	logits, err := exec.Exec1([][]int32{{0, 1, 0}}, [][]int32{{0, 0, 1}})
+	logits, err := exec.Call1([][]int32{{0, 1, 0}}, [][]int32{{0, 0, 1}})
 	if err != nil || logits.Shape().Dimensions[1] != 3 {
 		t.Fatalf("logits = %v, err = %v", logits.Shape(), err)
 	}

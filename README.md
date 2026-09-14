@@ -31,7 +31,8 @@ configuration and SafeTensors inventory plugin in
 
 Set `qwen.LoadOptions.Progress` or `gomlx.SessionOptions.Progress` to display
 checkpoint-load progress. Messages are human-readable diagnostics, not a
-machine-stable event protocol.
+machine-stable event protocol. `ProgressEvery` controls tensor messages; zero
+uses the default interval of 25 while retaining the first and last tensor.
 
 With `-tags gomlx`, the dense bridge is also a native go-peft LoRA host for
 Qwen's q/k/v/o and gate/up/down projections, plus an untied `lm_head`. QLoRA
