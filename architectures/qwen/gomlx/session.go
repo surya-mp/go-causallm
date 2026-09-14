@@ -4,6 +4,7 @@ package gomlx
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -28,6 +29,7 @@ type Session struct {
 type SessionOptions struct {
 	ScopeName string
 	DType     dtypes.DType
+	Progress  func(string)
 }
 
 // LoadSession loads config.json and dense SafeTensors weights from a Hugging
@@ -42,23 +44,35 @@ func LoadSession(modelDir string, options SessionOptions) (*Session, error) {
 	if !supportedDType(options.DType) {
 		return nil, ErrUnsupportedDType
 	}
+	progressf(options.Progress, "qwen/gomlx: reading config.json")
 	data, err := os.ReadFile(filepath.Join(modelDir, "config.json"))
 	if err != nil {
 		return nil, err
 	}
+	progressf(options.Progress, "qwen/gomlx: parsing config")
 	config, err := qwen.ParseConfig(data)
 	if err != nil {
 		return nil, err
 	}
+	progressf(options.Progress, "qwen/gomlx: creating variable store")
 	store := model.NewStore()
+	progressf(options.Progress, "qwen/gomlx: creating graph variables scope=%s dtype=%s", options.ScopeName, options.DType)
 	decoder, err := New(store.RootScope().At("%s", options.ScopeName), config, options.DType)
 	if err != nil {
 		return nil, err
 	}
-	if err := qwen.LoadSafeTensors(modelDir, config, decoder); err != nil {
+	progressf(options.Progress, "qwen/gomlx: loading SafeTensors")
+	if err := qwen.LoadSafeTensorsWithOptions(modelDir, config, decoder, qwen.LoadOptions{Progress: options.Progress}); err != nil {
 		return nil, err
 	}
+	progressf(options.Progress, "qwen/gomlx: session ready")
 	return &Session{ModelDir: modelDir, Config: config, Store: store, Model: decoder}, nil
+}
+
+func progressf(progress func(string), format string, args ...any) {
+	if progress != nil {
+		progress(fmt.Sprintf(format, args...))
+	}
 }
 
 // LoadLoRAAdapter injects a Hugging Face PEFT LoRA adapter into the session's

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/surya-mp/go-causallm"
@@ -112,6 +113,27 @@ func TestLoadSafeTensors(t *testing.T) {
 	}
 	if len(sink) != len(specs) || sink["model.embed_tokens.weight"].dtype != "F32" {
 		t.Fatalf("loaded = %#v", sink)
+	}
+}
+
+func TestLoadSafeTensorsReportsProgress(t *testing.T) {
+	config := tinyConfig(t)
+	specs, err := TensorSpecs(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := writeCheckpoint(t, specs, nil)
+	var messages []string
+	if err := LoadSafeTensorsWithOptions(dir, config, make(tensorSink), LoadOptions{
+		Progress: func(message string) { messages = append(messages, message) },
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if len(messages) < 3 {
+		t.Fatalf("progress messages = %v", messages)
+	}
+	if !strings.HasPrefix(messages[0], "qwen: expecting ") {
+		t.Fatalf("first progress message = %q", messages[0])
 	}
 }
 

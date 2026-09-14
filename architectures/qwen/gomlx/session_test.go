@@ -31,6 +31,27 @@ func TestLoadSessionLoadsQwenCheckpoint(t *testing.T) {
 	}
 }
 
+func TestLoadSessionReportsProgress(t *testing.T) {
+	config, err := qwen.ParseConfig([]byte(tinyQwenConfigJSON))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var messages []string
+	session, err := LoadSession(writeCheckpoint(t, config), SessionOptions{
+		DType:    dtypes.Float32,
+		Progress: func(message string) { messages = append(messages, message) },
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if session == nil || len(messages) < 5 {
+		t.Fatalf("session=%#v messages=%v", session, messages)
+	}
+	if messages[0] != "qwen/gomlx: reading config.json" {
+		t.Fatalf("first progress message = %q", messages[0])
+	}
+}
+
 func TestLoadLoRAAdapterInjectsAndLoadsPEFTAdapter(t *testing.T) {
 	config, err := qwen.ParseConfig([]byte(tinyQwenConfigJSON))
 	if err != nil {

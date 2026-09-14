@@ -36,6 +36,12 @@ type TensorSink interface {
 	SetTensor(name, dtype string, shape []int, data []float32) error
 }
 
+// LoadOptions controls checkpoint loading diagnostics.
+type LoadOptions struct {
+	// Progress receives human-readable status messages during checkpoint load.
+	Progress func(string)
+}
+
 // Name identifies the Qwen architecture family.
 func (Plugin) Name() string { return "qwen" }
 
@@ -203,6 +209,12 @@ func TensorSpecs(config causallm.Config) ([]TensorSpec, error) {
 // LoadSafeTensors streams a dense Qwen Hugging Face checkpoint into sink. It
 // validates all required tensor names and shapes before reporting success.
 func LoadSafeTensors(dir string, config causallm.Config, sink TensorSink) error {
+	return LoadSafeTensorsWithOptions(dir, config, sink, LoadOptions{})
+}
+
+// LoadSafeTensorsWithOptions streams a dense Qwen Hugging Face checkpoint into
+// sink with optional progress reporting.
+func LoadSafeTensorsWithOptions(dir string, config causallm.Config, sink TensorSink, options LoadOptions) error {
 	if sink == nil {
 		return ErrNilTensorSink
 	}
@@ -210,6 +222,7 @@ func LoadSafeTensors(dir string, config causallm.Config, sink TensorSink) error 
 	if err != nil {
 		return err
 	}
+	progressf(options.Progress, "qwen: expecting %d tensors", len(specs))
 	expected := make(map[string][]int, len(specs))
 	for _, spec := range specs {
 		expected[spec.Name] = spec.Shape
@@ -221,6 +234,7 @@ func LoadSafeTensors(dir string, config causallm.Config, sink TensorSink) error 
 			return wanted
 		},
 		OnTensor: func(tensor basemodel.Tensor) error {
+			progressf(options.Progress, "qwen: loading tensor %d/%d %s shape=%v dtype=%s shard=%s", len(seen)+1, len(expected), tensor.Name, tensor.Shape, tensor.DType, tensor.Shard)
 			shape := expected[tensor.Name]
 			if !equalShape(shape, tensor.Shape) {
 				return fmt.Errorf("%w: %s got %v want %v", ErrTensorShape, tensor.Name, tensor.Shape, shape)
@@ -229,6 +243,7 @@ func LoadSafeTensors(dir string, config causallm.Config, sink TensorSink) error 
 				return err
 			}
 			seen[tensor.Name] = struct{}{}
+			progressf(options.Progress, "qwen: loaded tensor %d/%d %s", len(seen), len(expected), tensor.Name)
 			return nil
 		},
 	})
@@ -240,7 +255,14 @@ func LoadSafeTensors(dir string, config causallm.Config, sink TensorSink) error 
 			return fmt.Errorf("%w: %s", ErrMissingTensor, spec.Name)
 		}
 	}
+	progressf(options.Progress, "qwen: loaded all %d tensors", len(seen))
 	return nil
+}
+
+func progressf(progress func(string), format string, args ...any) {
+	if progress != nil {
+		progress(fmt.Sprintf(format, args...))
+	}
 }
 
 func equalShape(left, right []int) bool {
