@@ -40,6 +40,9 @@ type TensorSink interface {
 type LoadOptions struct {
 	// Progress receives human-readable status messages during checkpoint load.
 	Progress func(string)
+	// ProgressEvery reports selected tensor progress every N tensors.
+	// When zero, a modest default is used.
+	ProgressEvery int
 }
 
 // Name identifies the Qwen architecture family.
@@ -228,13 +231,20 @@ func LoadSafeTensorsWithOptions(dir string, config causallm.Config, sink TensorS
 		expected[spec.Name] = spec.Shape
 	}
 	seen := make(map[string]struct{}, len(expected))
+	progressEvery := options.ProgressEvery
+	if progressEvery <= 0 {
+		progressEvery = 25
+	}
 	_, err = basemodel.Load(dir, basemodel.Options{
 		Filter: func(name string) bool {
 			_, wanted := expected[name]
 			return wanted
 		},
 		OnTensor: func(tensor basemodel.Tensor) error {
-			progressf(options.Progress, "qwen: loading tensor %d/%d %s shape=%v dtype=%s shard=%s", len(seen)+1, len(expected), tensor.Name, tensor.Shape, tensor.DType, tensor.Shard)
+			next := len(seen) + 1
+			if shouldReportTensor(next, len(expected), progressEvery) {
+				progressf(options.Progress, "qwen: loading tensor %d/%d %s shape=%v dtype=%s shard=%s", next, len(expected), tensor.Name, tensor.Shape, tensor.DType, tensor.Shard)
+			}
 			shape := expected[tensor.Name]
 			if !equalShape(shape, tensor.Shape) {
 				return fmt.Errorf("%w: %s got %v want %v", ErrTensorShape, tensor.Name, tensor.Shape, shape)
@@ -243,9 +253,10 @@ func LoadSafeTensorsWithOptions(dir string, config causallm.Config, sink TensorS
 				return err
 			}
 			seen[tensor.Name] = struct{}{}
-			progressf(options.Progress, "qwen: loaded tensor %d/%d %s", len(seen), len(expected), tensor.Name)
 			return nil
 		},
+		Progress:      options.Progress,
+		ProgressEvery: progressEvery,
 	})
 	if err != nil {
 		return err
@@ -263,6 +274,10 @@ func progressf(progress func(string), format string, args ...any) {
 	if progress != nil {
 		progress(fmt.Sprintf(format, args...))
 	}
+}
+
+func shouldReportTensor(index, total, every int) bool {
+	return every > 0 && (index == 1 || index == total || index%every == 0)
 }
 
 func equalShape(left, right []int) bool {

@@ -27,9 +27,10 @@ type Session struct {
 
 // SessionOptions configures LoadSession.
 type SessionOptions struct {
-	ScopeName string
-	DType     dtypes.DType
-	Progress  func(string)
+	ScopeName     string
+	DType         dtypes.DType
+	Progress      func(string)
+	ProgressEvery int
 }
 
 // LoadSession loads config.json and dense SafeTensors weights from a Hugging
@@ -62,7 +63,7 @@ func LoadSession(modelDir string, options SessionOptions) (*Session, error) {
 		return nil, err
 	}
 	progressf(options.Progress, "qwen/gomlx: loading SafeTensors")
-	if err := qwen.LoadSafeTensorsWithOptions(modelDir, config, decoder, qwen.LoadOptions{Progress: options.Progress}); err != nil {
+	if err := qwen.LoadSafeTensorsWithOptions(modelDir, config, decoder, qwen.LoadOptions{Progress: options.Progress, ProgressEvery: options.ProgressEvery}); err != nil {
 		return nil, err
 	}
 	progressf(options.Progress, "qwen/gomlx: session ready")

@@ -125,7 +125,8 @@ func TestLoadSafeTensorsReportsProgress(t *testing.T) {
 	dir := writeCheckpoint(t, specs, nil)
 	var messages []string
 	if err := LoadSafeTensorsWithOptions(dir, config, make(tensorSink), LoadOptions{
-		Progress: func(message string) { messages = append(messages, message) },
+		Progress:      func(message string) { messages = append(messages, message) },
+		ProgressEvery: 1,
 	}); err != nil {
 		t.Fatal(err)
 	}

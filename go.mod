@@ -5,7 +5,7 @@ go 1.26.5
 require (
 	github.com/gomlx/compute v0.1.6
 	github.com/gomlx/gomlx v0.28.8
-	github.com/surya-mp/go-peft v0.1.1
+	github.com/surya-mp/go-peft v0.1.4
 )
 
 require (
